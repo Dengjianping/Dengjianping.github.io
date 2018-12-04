@@ -1,6 +1,6 @@
 ## [blog.github.io](https://github.com/varHarrie/varharrie.github.io)
 
-This repo is from [varHarrie](https://github.com/varHarrie/varharrie.github.io), I made some change to adapt my blog.
+This repo is from [varHarrie](https://github.com/varHarrie/varharrie.github.io), and I made some change to adapt my blog.
 The author's blog is here http://varharrie.me/#/
 
 ## How to use.
