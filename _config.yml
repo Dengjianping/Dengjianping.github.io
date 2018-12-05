@@ -1,14 +1,12 @@
 # Site settings
-title: The Rust Programming Language Blog
+title: Jamie Blog
 description: >
-  Words from the Rust team
+  The Void
 baseurl: ""
-url: "https://blog.rust-lang.org"
-logo: "https://www.rust-lang.org/logos/rust-logo-64x64-blk.png"
-twitter_username: rustlang
-github_username: rust-lang
+url: "https://dengjianping.github.io/"
+github_username: Dengjianping
 
 # Build settings
 highlighter: rouge
 
-root: https://blog.rust-lang.org
+root: https://dengjianping.github.io/
