@@ -41,14 +41,18 @@ $ cargo install cargo-web
 
 
 接下来将做一个最简单的例子，这个plugin能够显示当前的时间。比如
+
 ```
 $ cargo date // 2019-02-21
 ```
-1. 首先创建一个project。工程名字无所谓，主要是要注意cargo.toml的bin配置。
+
+1. 首先创建一个project。工程名字无所谓，主要是要注意cargo.toml的bin配置
+
 ```
 $ cargo new --bin cargo-date
 ```
-2. 配置cargo.toml。把下面的这段加入到cargo.toml文件里。注意名字，格式一定要是**cargo-${command}**
+2. 配置cargo.toml。把下面的这段加入到cargo.toml文件里。注意名字，格式一定要是**cargo-${command}**。
+
 ```
 [[bin]]
 name = "cargo-date"
@@ -57,7 +61,9 @@ path = "src/main.rs"
 [dependencies]
 chrono = "0.4" # 3rd-party time module
 ```
+
 3. 功能部分。这个很简单无需多言。为什么不用标准库的time模块，因为那个太简陋了。
+
 ```
 use chrono::Local;
 
@@ -66,20 +72,27 @@ fn main() {
     println!("{}", date.format("[%Y-%m-%d][%H:%M:%S]"));
 }
 ```
+
 4. 编译并安装。这是最重要的一步。
+
 ```
 // go to directory including cargo.toml
 $ cargo install --path .
 ```
+
 这条命令会编译并安装，安装目录分OS不同而不同。
+
 - Windows: ```C:\Users\User_name\.cargo\bin\cargo-date```
 - Linux: ```/home/user_name/.cargo/bin/cargo-date```
 
 现在我们可以执行plugin了。
+
 ```
 $ cargo date
 ```
+
 这会打印如下信息
+
 ```
 [2019-02-21][13:19:54]
 ```
