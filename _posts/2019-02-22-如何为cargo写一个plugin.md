@@ -4,7 +4,6 @@ title: "如何为cargo写一个插件(plugin)"
 author: Jamie
 ---
 
-## 如何为cargo写一个插件(plugin)
 
 如果大家用过rust里的cargo工具，应该会觉得这大概是世界上最好的工程管理工具了吧。
 
@@ -46,12 +45,13 @@ $ cargo install cargo-web
 $ cargo date // 2019-02-21
 ```
 
-1. 首先创建一个project。工程名字无所谓，主要是要注意cargo.toml的bin配置
+- 首先创建一个project。工程名字无所谓，主要是要注意cargo.toml的bin配置
 
 ```
 $ cargo new --bin cargo-date
 ```
-2. 配置cargo.toml。把下面的这段加入到cargo.toml文件里。注意名字，格式一定要是**cargo-${command}**。
+
+- 配置cargo.toml。把下面的这段加入到cargo.toml文件里。注意名字，格式一定要是**cargo-${command}**。
 
 ```
 [[bin]]
@@ -62,7 +62,7 @@ path = "src/main.rs"
 chrono = "0.4" # 3rd-party time module
 ```
 
-3. 功能部分。这个很简单无需多言。为什么不用标准库的time模块，因为那个太简陋了。
+- 功能部分。这个很简单无需多言。为什么不用标准库的time模块，因为那个太简陋了。
 
 ```
 use chrono::Local;
@@ -73,7 +73,7 @@ fn main() {
 }
 ```
 
-4. 编译并安装。这是最重要的一步。
+- 编译并安装。这是最重要的一步。
 
 ```
 // go to directory including cargo.toml
