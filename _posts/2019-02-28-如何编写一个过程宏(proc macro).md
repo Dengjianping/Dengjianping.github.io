@@ -8,7 +8,7 @@ author: Jamie
 
 ## 优点
 - 增加代码的复用。
-- 性能。因为实在编译时生成，所以会得到更好的性能。
+- ~~性能。因为是在编译时生成，所以会得到更好的性能。~~没测试过，有待商榷
 
 ## Reference
 
@@ -146,8 +146,7 @@ pub fn derive_show(item: TokenStream) -> TokenStream {
 ```
 
 使用情形:
-```
-use std::fmt; // 这个必须引入，因为宏的卫生性
+```rust
 use your_crate_name::Show;
 // ...
 #[derive(Show)]
@@ -161,7 +160,7 @@ println!("{}", me); // MySelf (Jamie, 255)
 ```
 
 不过呢，继承宏还可以添加额外的属性，函数签名类似如下
-```
+```rust
 #[proc_macro_derive(MyDerive, attributes(my_attr)]
 pub fn my_proc_macro_derive(input: TokenStream) -> TokenStream{
     // ...
@@ -172,7 +171,7 @@ pub fn my_proc_macro_derive(input: TokenStream) -> TokenStream{
 
 ### proc_macro_attribute(Attribute macros, 属性宏)
 属性宏的函数签名类似如下:
-```
+```rust
 #[proc_macro_attribute]
 pub fn my_attribute_macro(attr: TokenStream, item: TokenStream) -> TokenStream {
     // ...
