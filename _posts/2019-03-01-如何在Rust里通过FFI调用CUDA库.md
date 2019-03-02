@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "如何编写一个过程宏(proc-macro)"
+title: "如何在Rust里通过FFI调用CUDA库"
 author: Jamie
 ---
 
