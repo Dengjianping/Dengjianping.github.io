@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "一些rust编程的tricks"
+title: "一些rust编程的tricks，持续更新中"
 author: Jamie
 ---
 
