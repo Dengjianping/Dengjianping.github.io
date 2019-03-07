@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Rust API Guidelines中文翻译(incomplete)"
+title: "Rust API Guidelines中文翻译(WIP)"
 author: Jamie
 ---
 
