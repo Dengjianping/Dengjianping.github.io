@@ -11,7 +11,7 @@ author: Jamie
 里面就有一个回复说是理解使用HRTBs。当然了，我肯定不是什么expert。所以顺便去了解下什么是HRTBs，于是有了这篇文章。
 
 HRTBs，aka Higher-Ranked Trait Bounds。定义如下
-```
+```rust
 for<'a> T: Trait<'a>
 ```
 
@@ -32,7 +32,7 @@ for<'a> T: Trait<'a>
 
 先拿出官方的例子(来自[std](https://doc.rust-lang.org/reference/trait-bounds.html#higher-ranked-trait-bounds)，例子本身没多大意义，只是为了说明这个问题)
 
-```
+```rust
 fn call_on_ref_zero<F>(f: F) where for<'a> F: Fn(&'a i32) {
     let zero = 0;
     f(&zero);
@@ -43,7 +43,7 @@ fn call_on_ref_zero<F>(f: F) where for<'a> F: Fn(&'a i32) {
 
 其实我们知道，像函数参数接受单个引用，是可以省略生命周期的，因为编译器可以自动推导出来，这个时候可以省略for<'a>。如下也是可以编译的(现在在Rust 1.36编译没有问题，但之前的版本的编译器我不知道能不能推导)：
 
-```
+```rust
 fn call_on_ref_zero<F>(f: F) where F: Fn(&i32) {
     let zero = 0;
     f(&zero);
@@ -52,7 +52,7 @@ fn call_on_ref_zero<F>(f: F) where F: Fn(&i32) {
 
 但是如果我稍加修改，闭包接受两个引用，并返回其中一个引用，会怎么样？
 
-```
+```rust
 fn call_on_ref_zero<F>(f: F) where F: Fn(&i32, &i32) -> &i32 {
     let zero = 0;
     f(&zero, &zero);
@@ -61,7 +61,7 @@ fn call_on_ref_zero<F>(f: F) where F: Fn(&i32, &i32) -> &i32 {
 
 这个时候编译器就报错了，因为闭包不知道你返回的是哪一个引用，编译器是无法推导返回引用的生命周期，所以试着添加生命周期看看。
 
-```
+```rust
 fn call_on_ref_zero<'a, F>(f: F) where F: Fn(&'a i32, &'a i32) -> &'a i32 {
     let zero = 0;
     f(&zero, &zero);
@@ -70,7 +70,7 @@ fn call_on_ref_zero<'a, F>(f: F) where F: Fn(&'a i32, &'a i32) -> &'a i32 {
 
 修改后编译器还是会报错，因为 ```&zero``` 的生命周期是短于 ```'a``` 的，这就是为什么需要引入HRTBs的原因了。
 
-```
+```rust
 fn call_on_ref_zero<F>(f: F) where for<'a> F: Fn(&'a i32, &'a i32) -> &'a i32 {
     let zero = 0;
     f(&zero, &zero);
@@ -86,7 +86,7 @@ fn call_on_ref_zero<F>(f: F) where for<'a> F: Fn(&'a i32, &'a i32) -> &'a i32 {
 
 最后给出一个reddit上终极烧脑的 HRTBs 例子，看看能打印什么结果(莫被吓到了)。
 
-```
+```rust
 impl<'four> For for &'four for<'fore> For where for<'fore> For: For,
 {
     fn four(self: &&'four for<'fore> For) {
