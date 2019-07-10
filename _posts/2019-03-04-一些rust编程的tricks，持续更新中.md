@@ -90,7 +90,7 @@ match e {
 
 #### 嵌套的Option<T> or Result<T, E>
 
-```
+```rust
 // 可能还会嵌套更多
 let n = Ok(Some(3));
 if let Ok(Some(v)) = n {
@@ -167,7 +167,7 @@ let c = m.unwrap();
 
 错误信息可能如此:
 
-```
+```rust
 let c = m.a.unwrap();
         ^^^ cannot move out of borrowed content
 ```
@@ -185,7 +185,7 @@ let d = m.b.as_ref().unwrap();
 
 这其实也不算tricks，只是rust的一种稍显奇怪的表达方式。
 
-```
+```rust
 let a = 2u32;
 
 match a {
@@ -312,7 +312,7 @@ match (a, b) {
 
 或者
 
-```
+```rust
 if let (Some(_a), Some(_b)) = (a, b) {
     // do something
 } else {
@@ -336,7 +336,7 @@ fn handle_error() -> Result<i32, /**/> {
 
 但其实可以这样做，
 
-```
+```rust
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync + 'static>>;
 // 涉及到多线程的错误处理，需要加上 Send + Sync
 
@@ -354,7 +354,7 @@ fn handle_error() -> Result<i32> {
 学习过rust的都知道，rust的错误处理有个语法糖，就是 ？，非常简洁易用。
 但如果一个函数内既有 ```Result<T, E>``` 和 ```Option<T>```，这个就不能直接使用 ？ 了。幸亏Result 和Option都提供内置的相互转换的函数。
 
-```
+```rust
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync + 'static>>;
 // ...
 
@@ -367,7 +367,7 @@ fn handle() -> Result<i32> {
 
 当然也可以Result to Option.
 
-```
+```rust
 fn handle() -> Option<i32> {
     let a: i32 = "32".parse().ok()?;
     let b: i32 = Some(12)?; // Result to Option
@@ -399,7 +399,7 @@ let b: Vec<_> = a.iter().filter_map(identity).collect();
 
 https://github.com/rust-lang/rust/issues/15701
 
-```
+```rust
 let mut a: i32 = 32;
 
 #[cfg(feature = "add_3")]
@@ -411,7 +411,7 @@ a += 5;
 
 若要在stable版本中实现，则需要加上 ```{}```，比如根据工程的feature来决定是否要编译一条语句。
 
-```
+```rust
 #[cfg(feature = "add_3")]
 {
     a += 3;
