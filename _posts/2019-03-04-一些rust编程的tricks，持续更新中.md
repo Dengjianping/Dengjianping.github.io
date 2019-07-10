@@ -11,6 +11,8 @@ author: Jamie
 所以这篇文章就列举一些我所知道的rust编程tricks。
 如果是老鸟，就可以忽略不看了。
 
+### 2019/03/04
+
 #### 枚举转换成数字(enum to number)
 
 ```rust
@@ -279,6 +281,150 @@ let str_len: Vec<_> = v_str.iter().map(|s| s.len()).collect();
 // 多说一句，len的函数签名是 pub fn len(&self), 所以用 iter
 let str_len: Vec<_> = v_str.iter().map(str::len).collect();
 ```
+
+### 2019/07/09 更新
+
+#### 巧用match和元祖
+
+比如你有一段如下代码，这样写就稍显冗长。
+
+```rust
+let a = Some(10i32);
+let b = Some("match");
+
+if a.is_some() && b.is_some() {
+    let _a = a.unwrap();
+    let _b = b.unwrap();
+    // do something
+} else {
+    // do something else
+}
+```
+
+利用元祖就可以这样写，简洁优雅
+
+```rust
+match (a, b) {
+    (Some(_a), Some(_b)) => // do something
+    _ => // do something else
+}
+```
+
+或者
+
+```
+if let (Some(_a), Some(_b)) = (a, b) {
+    // do something
+} else {
+    // do something else
+}
+```
+
+#### 错误处理
+
+有时候引入第三方crate，而其不同API返回的错误类型就不一样，有时候处理错误很麻烦，比如这样
+
+```rust
+fn handle_error() -> Result<i32, /**/> {
+    let a: i32 = "32".parse()?;
+    let b = std::fs::File::open("file_path")?;
+
+    // do something else
+    Ok(a)
+}
+```
+
+但其实可以这样做，
+
+```
+type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync + 'static>>;
+// 涉及到多线程的错误处理，需要加上 Send + Sync
+
+fn handle_error() -> Result<i32> {
+    let a: i32 = "32".parse()?;
+    let b = std::fs::File::open("file_path")?;
+    
+    // do something else
+    Ok(a)
+}
+```
+
+#### 统一使用 ？
+
+学习过rust的都知道，rust的错误处理有个语法糖，就是 ？，非常简洁易用。
+但如果一个函数内既有 ```Result<T, E>``` 和 ```Option<T>```，这个就不能直接使用 ？ 了。幸亏Result 和Option都提供内置的相互转换的函数。
+
+```
+type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync + 'static>>;
+// ...
+
+fn handle() -> Result<i32> {
+    let a: i32 = "32".parse()?;
+    let b: i32 = Some(12).ok_or("error happened")?; // Option to Result
+    Ok(a + b)
+}
+```
+
+当然也可以Result to Option.
+
+```
+fn handle() -> Option<i32> {
+    let a: i32 = "32".parse().ok()?;
+    let b: i32 = Some(12)?; // Result to Option
+    Some(a + b)
+}
+```
+
+#### std::convert::identity
+
+有时候你可能有一个这样的数组，想要提取出不是None的元素
+
+```rust
+let a = vec![Some(32i32), None, Some(45), Some(100)];
+let b: Vec<_> = a.iter().filter(Option::is_some()).collect(); // 其实这样也够简洁了
+```
+
+但巧用 std::convert::identity，也可以达到此目的
+
+```rust
+use std::convert::identity;
+
+let a = vec![Some(32i32), None, Some(45), Some(100)];
+let b: Vec<_> = a.iter().filter_map(identity).collect();
+```
+
+#### 根据编译条件决定是否要执行某些语句
+
+目前，stable版本的rust还不支持控制单条语句的执行，只能在nightly版本体验，具体看这个链接：
+
+https://github.com/rust-lang/rust/issues/15701
+
+```
+let mut a: i32 = 32;
+
+#[cfg(feature = "add_3")]
+a += 3;
+
+#[cfg(feature = "add_5")]
+a += 5;
+```
+
+若要在stable版本中实现，则需要加上 ```{}```，比如根据工程的feature来决定是否要编译一条语句。
+
+```
+#[cfg(feature = "add_3")]
+{
+    a += 3;
+}
+
+#[cfg(feature = "add_5")]
+{
+    a += 5;
+}
+```
+
+这个我觉得还是挺有用的，希望快点稳定下来。
+
 
 ### 结语
 文中提到的，如果熟悉rust的人，可能这都不是什么tricks了。但这篇文章还是会持续更新中，因为rust每次更新都会带来一些新的feature。
