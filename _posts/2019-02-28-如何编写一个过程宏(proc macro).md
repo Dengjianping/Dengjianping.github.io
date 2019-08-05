@@ -295,6 +295,39 @@ deco(4);
 deco(2);
 ```
 
+#### 2019/08/05更新
+上面这个例子有点复杂了，其实可以不用把测试函数作为参数传入，所以不需要定义一个attr，也不需要解析这个attr。直接可以这样写，简单明了，可以获取任意函数的运行时，上面的那个还要考虑参数类型。
+
+```rust
+#[proc_macro_attribute]
+pub fn run_time(_: TokenStream, func: TokenStream) -> TokenStream {
+    let func = parse_macro_input!(func as ItemFn);
+    let func_vis = &func.vis; // like pub
+    let func_name = &func.ident; // function name
+    let func_block = &func.block; // { some statement or expression here }
+    let func_decl = func.decl;
+
+    let func_generics = &func_decl.generics;
+    let func_inputs = &func_decl.inputs;
+    let func_output = &func_decl.output;
+    
+    let caller = quote!{
+        // rebuild the function, add a func named is_expired to check user login session expire or not.
+        #func_vis fn #func_name #func_generics(#func_inputs) #func_output {
+            use std::time;
+            
+            let start = time::Instant::now();
+            #func_block
+            println!("time cost {:?}", start.elapsed());
+        }
+    };
+    
+    // build a TokenStream
+    // https://docs.rs/quote/0.6.10/quote/macro.quote.html
+    caller.into() 
+}
+```
+
 
 ## 调试
 [**quote**](https://docs.rs/quote/0.6.11/quote/)的作者实现了一个[**cargo-expand**]()，专门用来调试过程宏的，可以在编译时展开你定义的过程宏，但我没具体用过。
