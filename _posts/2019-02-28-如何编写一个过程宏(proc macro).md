@@ -328,6 +328,19 @@ pub fn run_time(_: TokenStream, func: TokenStream) -> TokenStream {
 }
 ```
 
+使用和前面的类似。
+```rust
+#[run_time]
+fn deco(t: u64) {
+    let secs = Duration::from_secs(t);
+    thread::sleep(secs);
+}
+
+// ...
+deco(4);
+deco(2);
+```
+
 
 ## 调试
 [**quote**](https://docs.rs/quote/0.6.11/quote/)的作者实现了一个[**cargo-expand**]()，专门用来调试过程宏的，可以在编译时展开你定义的过程宏，但我没具体用过。
