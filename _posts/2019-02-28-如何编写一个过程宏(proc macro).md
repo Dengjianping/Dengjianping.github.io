@@ -36,9 +36,9 @@ path = "src/lib.rs"
 
 而编写过程宏，在stable版本里，我们需要借助三个crate:
 
-- [**syn**](https://docs.rs/syn/0.15.26/syn/index.html)，这个是用来解析语法树(AST)的。各种语法构成
-- [**quote**](https://docs.rs/quote/0.6.11/quote/)，解析语法树，生成rust代码，从而实现你想要的新功能。
-- [**proc_macro**(std)](https://doc.rust-lang.org/proc_macro/index.html) 和 [**proc_macro2**(3rd-party)](https://docs.rs/proc-macro2/0.4.27/proc_macro2/index.html)
+- [**syn**](https://docs.rs/syn/1.0.1/syn/)，这个是用来解析语法树(AST)的。各种语法构成
+- [**quote**](https://docs.rs/quote/1.0.0/quote/)，解析语法树，生成rust代码，从而实现你想要的新功能。
+- [**proc_macro**(std)](https://doc.rust-lang.org/proc_macro/index.html) 和 [**proc_macro2**(3rd-party)](https://docs.rs/proc-macro2/1.0.0/proc_macro2/)
 
 但在nightly版本里，以上的这些crate都不需要了，不依赖第三方crate，还有就是语法上是稍微有些不同，大部分是一样的。但这篇文章只讲stable rust里的过程宏，如果想了解nightly rust的过程宏，可以去看[**maud**](https://github.com/lfairy/maud) 和[**Rocket**](https://github.com/SergioBenitez/rocket)，前者是一个HTML模板引擎，大量使用了过程宏，模板都是编译时生成，所以性能非常高，而后者是一个web framework，rust各种黑魔法使用的集大成者。
 
@@ -128,7 +128,7 @@ pub fn derive_show(item: TokenStream) -> TokenStream {
                     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
                         // #(#get_self),*，这是多重匹配，生成的样子大概是这样：&self.a, &self.b, &self.c, ...
                         // 用法和标准宏有点像，关于多个匹配，可以看这个文档
-                        // https://docs.rs/quote/0.6.11/quote/macro.quote.html
+                        // https://docs.rs/quote/1.0.0/quote/macro.quote.html
                         write!(f, "{} {:?}", stringify!(#struct_name), (#(#get_selfs),*))
                     }
                 }
@@ -218,11 +218,11 @@ fn my_func() {
 #[proc_macro_attribute]
 pub fn rust_decorator(attr: TokenStream, func: TokenStream) -> TokenStream {
     let func = parse_macro_input!(func as ItemFn); // 我们传入的是一个函数，所以要用到ItemFn
-    let func_name = &func.ident; // 函数名
     let func_vis = &func.vis; // pub
-    let func_decl = &func.decl; // 函数申明
     let func_block = &func.block; // 函数主体实现部分{}
 
+    let func_decl = &func.sig; // 函数申明
+    let func_name = &func_decl.ident; // 函数名
     let func_generics = &func_decl.generics; // 函数泛型
     let func_inputs = &func_decl.inputs; // 函数输入参数
     let func_output = &func_decl.output; // 函数返回
@@ -231,8 +231,8 @@ pub fn rust_decorator(attr: TokenStream, func: TokenStream) -> TokenStream {
     let params: Vec<_> = func_inputs.iter().map(|i| {
         match i {
             // 提取形参的pattern
-            // https://docs.rs/syn/0.15.26/syn/enum.Pat.html
-            FnArg::Captured(ref val) => &val.pat, // pat没有办法移出val，只能借用，或者val.pat.clone()
+            // https://docs.rs/syn/1.0.1/syn/struct.PatType.html
+            FnArg::Typed(ref val) => &val.pat, // pat没有办法移出val，只能借用，或者val.pat.clone()
             _ => unreachable!("it's not gonna happen."),
         }
     }).collect();
@@ -241,7 +241,7 @@ pub fn rust_decorator(attr: TokenStream, func: TokenStream) -> TokenStream {
     let attr = parse_macro_input!(attr as AttributeArgs);
     // 提取attr的ident，此处例子只有一个attribute
     let attr_ident = match attr.get(0).as_ref().unwrap() {
-        NestedMeta::Meta(Meta::Word(ref attr_ident)) => attr_ident.clone(),
+        NestedMeta::Meta(Meta::Path(ref attr_ident)) => attr_ident.clone(),
         _ => unreachable!("it not gonna happen."),
     };
     
@@ -303,10 +303,10 @@ deco(2);
 pub fn run_time(_: TokenStream, func: TokenStream) -> TokenStream {
     let func = parse_macro_input!(func as ItemFn);
     let func_vis = &func.vis; // like pub
-    let func_name = &func.ident; // function name
     let func_block = &func.block; // { some statement or expression here }
-    let func_decl = func.decl;
 
+    let func_decl = func.sig;
+    let func_name = &func.ident; // function name
     let func_generics = &func_decl.generics;
     let func_inputs = &func_decl.inputs;
     let func_output = &func_decl.output;
@@ -322,8 +322,6 @@ pub fn run_time(_: TokenStream, func: TokenStream) -> TokenStream {
         }
     };
     
-    // build a TokenStream
-    // https://docs.rs/quote/0.6.10/quote/macro.quote.html
     caller.into() 
 }
 ```
@@ -343,7 +341,7 @@ deco(2);
 
 
 ## 调试
-[**quote**](https://docs.rs/quote/0.6.11/quote/)的作者实现了一个[**cargo-expand**]()，专门用来调试过程宏的，可以在编译时展开你定义的过程宏，但我没具体用过。
+[**quote**](https://docs.rs/quote/1.0.0/quote/)的作者实现了一个[**cargo-expand**]()，专门用来调试过程宏的，可以在编译时展开你定义的过程宏，但我没具体用过。
 具体使用可以看这个文档
 - [**Doc**](https://github.com/dtolnay/cargo-expand)
 - [**Debugging Rust's new Custom Derive system**](https://quodlibetor.github.io/posts/debugging-rusts-new-custom-derive-system/)
@@ -361,4 +359,5 @@ deco(2);
 要学好过程宏，还是要去好好看文档，多多练习，简单到复杂。
 
 所以的实例代码，可以在这里看到，所以的例子都是在rust版本1.32之下编写并通过编译的，最好使用最新的stable rust。当然nightly rust应该也可以编译过。
-- [**proc-macro example**](https://github.com/Dengjianping/proc-macro-examples)
+- [**proc-macro example**](https://github.com/Dengjianping/proc-macro-examples), using syn 1.0, quote 1.0, proc-macro2 1.0.
+-  [**proc-macro example**](https://github.com/Dengjianping/proc-macro-examples/tree/syn_0.15), using syn 0.15, quote 0.6, proc-macro2 0.4.
