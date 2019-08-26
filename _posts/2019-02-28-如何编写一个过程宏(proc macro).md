@@ -3,6 +3,7 @@ layout: post
 title: "如何编写一个过程宏(proc-macro)"
 author: Jamie
 ---
+**更新到(syn, quote, proc-macro)-1.0**
 
 过程宏是rust里的强大的武器，非常值得学习rust的人去掌握。但过程宏的编写有点难度，且文档也不太详细，最近也专门学习了下过程宏，算是有点收获，写下一点东西。
 
